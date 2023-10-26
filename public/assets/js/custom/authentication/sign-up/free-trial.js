@@ -144,7 +144,7 @@ var KTSignupFreeTrial = function() {
 
     // Password input validation
     var validatePassword = function() {
-        return  (passwordMeter.getScore() === 100);
+        return  (passwordMeter.getScore() > 50);
     }
 
     // Public functions

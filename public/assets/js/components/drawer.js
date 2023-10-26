@@ -407,6 +407,29 @@ KTDrawer.handleShow = function() {
     });
 }
 
+// Handle escape key press
+KTDrawer.handleEscapeKey = function() {
+    document.addEventListener('keydown', (event) => {        
+        if (event.key === 'Escape') {
+            //if esc key was not pressed in combination with ctrl or alt or shift
+            const isNotCombinedKey = !(event.ctrlKey || event.altKey || event.shiftKey);
+            if (isNotCombinedKey) {
+                var elements = document.querySelectorAll('.drawer-on[data-kt-drawer="true"]:not([data-kt-drawer-escape="false"])');
+                var drawer;
+
+                if ( elements && elements.length > 0 ) {
+                    for (var i = 0, len = elements.length; i < len; i++) {
+                        drawer = KTDrawer.getInstance(elements[i]);
+                        if (drawer.isShown()) {
+                            drawer.hide();
+                        }
+                    }
+                }              
+            }
+        }
+    });
+}
+
 // Dismiss instances
 KTDrawer.handleDismiss = function() {
     // External drawer toggle handler
@@ -452,6 +475,7 @@ KTDrawer.init = function() {
         KTDrawer.handleResize();
         KTDrawer.handleShow();
         KTDrawer.handleDismiss();
+        KTDrawer.handleEscapeKey();
 
         KTDrawerHandlersInitialized = true;
     }

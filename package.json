@@ -82,7 +82,7 @@
     "esri-leaflet-geocoder": "^3.0.0",
     "fast-equals": "^2.0.4",
     "file-viewer": "^1.2.0",
-    "firebase": "^9.6.1",
+    "firebase": "^9.23.0",
     "flatpickr": "^4.6.9",
     "flot": "^4.2.2",
     "fslightbox": "^3.4.1",

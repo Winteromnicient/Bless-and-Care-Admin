@@ -68,6 +68,7 @@ var KTSticky = function(element, options) {
 
         // Exit if false
         if ( offset === false ) {
+            _disable();
             return;
         }
 

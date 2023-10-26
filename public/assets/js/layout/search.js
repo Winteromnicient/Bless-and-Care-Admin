@@ -87,35 +87,38 @@ var KTLayoutSearch = function() {
 
     var handlePreferences = function() {
         // Preference show handler
-        preferencesShowElement.addEventListener('click', function() {
-            wrapperElement.classList.add('d-none');
-            preferencesElement.classList.remove('d-none');
-        });
+        if (preferencesShowElement) { 
+            preferencesShowElement.addEventListener('click', function() {
+                wrapperElement.classList.add('d-none');
+                preferencesElement.classList.remove('d-none');
+            });
+        }
 
         // Preference dismiss handler
-        preferencesDismissElement.addEventListener('click', function() {
-            wrapperElement.classList.remove('d-none');
-            preferencesElement.classList.add('d-none');
-        });
+        if (preferencesDismissElement) { 
+            preferencesDismissElement.addEventListener('click', function() {
+                wrapperElement.classList.remove('d-none');
+                preferencesElement.classList.add('d-none');
+            });
+        }
     }
 
     var handleAdvancedOptionsForm = function() {
         // Show
-        advancedOptionsFormShowElement.addEventListener('click', function() {
-            wrapperElement.classList.add('d-none');
-            advancedOptionsFormElement.classList.remove('d-none');
-        });
+        if (advancedOptionsFormShowElement) {            
+            advancedOptionsFormShowElement.addEventListener('click', function() {
+                wrapperElement.classList.add('d-none');
+                advancedOptionsFormElement.classList.remove('d-none');
+            });
+        }        
 
         // Cancel
-        advancedOptionsFormCancelElement.addEventListener('click', function() {
-            wrapperElement.classList.remove('d-none');
-            advancedOptionsFormElement.classList.add('d-none');
-        });
-
-        // Search
-        advancedOptionsFormSearchElement.addEventListener('click', function() {
-            
-        });
+        if (advancedOptionsFormCancelElement) {           
+            advancedOptionsFormCancelElement.addEventListener('click', function() {
+                wrapperElement.classList.remove('d-none');
+                advancedOptionsFormElement.classList.add('d-none');
+            });
+        }
     }
 
     // Public methods
@@ -156,8 +159,13 @@ var KTLayoutSearch = function() {
             searchObject.on('kt.search.clear', clear);
 
             // Custom handlers
-            handlePreferences();
-            handleAdvancedOptionsForm();            
+            if (preferencesElement) {
+                handlePreferences();
+            }            
+
+            if (advancedOptionsFormElement) {
+                handleAdvancedOptionsForm();
+            }                        
 		}
 	};
 }();

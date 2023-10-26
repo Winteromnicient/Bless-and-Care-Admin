@@ -1,83 +1,62 @@
-'use strict';
+"use strict";
 
 // Class definition
-var KTAppSidebar = (function () {
-  // Private variables
-  var wrapper;
-  var sidebar;
-  var toggle;
+var KTAppSidebar = function () {
+	// Private variables
+	var secondaryWrapper;
+	var secondaryTagsCollapse;
+	var secondaryTagsToggle;
 
-  var handleToggle = function () {
-    var toggleObj = KTToggle.getInstance(toggle);
+	var handleSecondaryWrapper = function() {
+		var menuActiveItem = secondaryWrapper.querySelector(".menu-link.active");
 
-    if (toggleObj === null) {
-      return;
-    }
+		if ( !menuActiveItem ) {
+			return;
+		} 
 
-    // Add a class to prevent sidebar hover effect after toggle click
-    toggleObj.on('kt.toggle.change', function () {
-      // Set animation state
-      sidebar.classList.add('animating');
+		if ( KTUtil.isVisibleInContainer(menuActiveItem, secondaryWrapper) === true) {
+			return;
+		}
 
-      // Wait till animation finishes
-      setTimeout(function () {
-        // Remove animation state
-        sidebar.classList.remove('animating');
-      }, 300);
-    });
+		secondaryWrapper.scroll({
+			top: KTUtil.getRelativeTopPosition(menuActiveItem, secondaryWrapper),
+			behavior: 'smooth'
+		});
+	}
 
-    // Store sidebar minimize state in cookie
-    toggleObj.on('kt.toggle.changed', function () {
-      // In server side check sidebar_minimize_state cookie
-      // value and add data-kt-app-sidebar-minimize="on"
-      // attribute to Body tag and "active" class to the toggle button
-      var date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+	var handleTagsCollapse = function() {
+		secondaryTagsCollapse.addEventListener('shown.bs.collapse', event => {
+			if ( KTUtil.isVisibleInContainer(secondaryTagsToggle, secondaryWrapper) === true) {
+				return;
+			}
+	
+			secondaryWrapper.scroll({
+				top: KTUtil.getRelativeTopPosition(secondaryTagsToggle, secondaryWrapper),
+				behavior: 'smooth'
+			});
+		})
+	}
 
-      KTCookie.set(
-        'sidebar_minimize_state',
-        toggleObj.isEnabled() ? 'on' : 'off',
-        { expires: date }
-      );
-    });
-  };
+	// Public methods
+	return {
+		init: function () {
+			// Elements
+			secondaryWrapper = document.querySelector('#kt_app_sidebar_secondary_wrapper');
+			secondaryTagsCollapse = document.querySelector('#kt_app_sidebar_secondary_tags_collapse');
+			secondaryTagsToggle = document.querySelector('[href="#kt_app_sidebar_secondary_tags_collapse"]');
+			
+			if ( secondaryWrapper ) {
+				handleSecondaryWrapper();
+			}
 
-  var handleMenuScroll = function () {
-    var menuActiveItem = wrapper.querySelector('.menu-link.active');
-
-    if (!menuActiveItem) {
-      return;
-    }
-
-    if (KTUtil.isVisibleInContainer(menuActiveItem, wrapper) === true) {
-      return;
-    }
-
-    wrapper.scroll({
-      top: KTUtil.getRelativeTopPosition(menuActiveItem, wrapper),
-      behavior: 'smooth',
-    });
-  };
-
-  // Public methods
-  return {
-    init: function () {
-      // Elements
-      toggle = document.querySelector('#kt_app_sidebar_toggle');
-      wrapper = document.querySelector('#kt_app_sidebar_navs_wrappers');
-      sidebar = document.querySelector('#kt_app_sidebar');
-
-      if (toggle) {
-        handleToggle();
-      }
-
-      if (wrapper) {
-        handleMenuScroll();
-      }
-    },
-  };
-})();
+			if ( secondaryTagsCollapse ) {
+				handleTagsCollapse();
+			}
+		}
+	};
+}();
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
-  KTAppSidebar.init();
+	KTAppSidebar.init();
 });

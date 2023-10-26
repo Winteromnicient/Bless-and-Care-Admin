@@ -243,27 +243,30 @@ var KTApp = function () {
 
             $(element).select2(options);
 
+            // Handle Select2's KTMenu parent case
+            if (element.hasAttribute('data-dropdown-parent') && element.hasAttribute('multiple')) {
+                var parentEl = document.querySelector(element.getAttribute('data-dropdown-parent'));
+
+                if (parentEl && parentEl.hasAttribute("data-kt-menu")) {
+                    var menu = new KTMenu(parentEl);
+
+                    if (menu) {
+                        $(element).on('select2:unselect', function (e) {
+                            element.setAttribute("data-multiple-unselect", "1");
+                        });
+
+                        menu.on("kt.menu.dropdown.hide", function(item) {
+                            if (element.getAttribute("data-multiple-unselect") === "1") {
+                                element.removeAttribute("data-multiple-unselect");
+                                return false;
+                            }
+                        });
+                    }                    
+                }                
+            }
+
             element.setAttribute("data-kt-initialized", "1");
         });
-
-        /*
-        * Hacky fix for a bug in select2 with jQuery 3.6.0's new nested-focus "protection"
-        * see: https://github.com/select2/select2/issues/5993
-        * see: https://github.com/jquery/jquery/issues/4382
-        *
-        * TODO: Recheck with the select2 GH issue and remove once this is fixed on their side
-        */
-
-        if (select2FocusFixInitialized === false) {
-            select2FocusFixInitialized = true;
-            
-            $(document).on('select2:open', function(e) {
-                var elements = document.querySelectorAll('.select2-container--open .select2-search__field');
-                if (elements.length > 0) {
-                    elements[elements.length - 1].focus();
-                }                
-            });
-        }        
     }
 
     var createAutosize = function () {
@@ -370,65 +373,6 @@ var KTApp = function () {
             return;
         }
 
-        // Init Slider
-        var initSlider = function (el) {
-            if (!el) {
-                return;
-            }
-
-            const tnsOptions = {};
-
-            // Convert string boolean
-            const checkBool = function (val) {
-                if (val === 'true') {
-                    return true;
-                }
-                if (val === 'false') {
-                    return false;
-                }
-                return val;
-            };
-
-            // get extra options via data attributes
-            el.getAttributeNames().forEach(function (attrName) {
-                // more options; https://github.com/ganlanyuan/tiny-slider#options
-                if ((/^data-tns-.*/g).test(attrName)) {
-                    let optionName = attrName.replace('data-tns-', '').toLowerCase().replace(/(?:[\s-])\w/g, function (match) {
-                        return match.replace('-', '').toUpperCase();
-                    });
-
-                    if (attrName === 'data-tns-responsive') {
-                        // fix string with a valid json
-                        const jsonStr = el.getAttribute(attrName).replace(/(\w+:)|(\w+ :)/g, function (matched) {
-                            return '"' + matched.substring(0, matched.length - 1) + '":';
-                        });
-                        try {
-                            // convert json string to object
-                            tnsOptions[optionName] = JSON.parse(jsonStr);
-                        }
-                        catch (e) {
-                        }
-                    }
-                    else {
-                        tnsOptions[optionName] = checkBool(el.getAttribute(attrName));
-                    }
-                }
-            });
-
-            const opt = Object.assign({}, {
-                container: el,
-                slideBy: 'page',
-                autoplay: true,
-                autoplayButtonOutput: false,
-            }, tnsOptions);
-
-            if (el.closest('.tns')) {
-                KTUtil.addClass(el.closest('.tns'), 'tns-initiazlied');
-            }
-
-            return tns(opt);
-        }
-
         // Sliders
         const elements = Array.prototype.slice.call(document.querySelectorAll('[data-tns="true"]'), 0);
 
@@ -441,10 +385,69 @@ var KTApp = function () {
                 return;
             }
 
-            initSlider(el);
+            initTinySlider(el);
 
             el.setAttribute("data-kt-initialized", "1");
         });
+    }
+
+    var initTinySlider = function (el) {
+        if (!el) {
+            return;
+        }
+
+        const tnsOptions = {};
+
+        // Convert string boolean
+        const checkBool = function (val) {
+            if (val === 'true') {
+                return true;
+            }
+            if (val === 'false') {
+                return false;
+            }
+            return val;
+        };
+
+        // get extra options via data attributes
+        el.getAttributeNames().forEach(function (attrName) {
+            // more options; https://github.com/ganlanyuan/tiny-slider#options
+            if ((/^data-tns-.*/g).test(attrName)) {
+                let optionName = attrName.replace('data-tns-', '').toLowerCase().replace(/(?:[\s-])\w/g, function (match) {
+                    return match.replace('-', '').toUpperCase();
+                });
+
+                if (attrName === 'data-tns-responsive') {
+                    // fix string with a valid json
+                    const jsonStr = el.getAttribute(attrName).replace(/(\w+:)|(\w+ :)/g, function (matched) {
+                        return '"' + matched.substring(0, matched.length - 1) + '":';
+                    });
+                    try {
+                        // convert json string to object
+                        tnsOptions[optionName] = JSON.parse(jsonStr);
+                    }
+                    catch (e) {
+                    }
+                }
+                else {
+                    tnsOptions[optionName] = checkBool(el.getAttribute(attrName));
+                }
+            }
+        });
+
+        const opt = Object.assign({}, {
+            container: el,
+            slideBy: 'page',
+            autoplay: true,
+            center: true,
+            autoplayButtonOutput: false,
+        }, tnsOptions);
+
+        if (el.closest('.tns')) {
+            KTUtil.addClass(el.closest('.tns'), 'tns-initiazlied');
+        }
+
+        return tns(opt);
     }
 
     var initSmoothScroll = function () {
@@ -529,7 +532,7 @@ var KTApp = function () {
                     const modalEl = document.querySelector(this.getAttribute("data-bs-stacked-modal"));
     
                     if (modalEl) {
-                        const modal = new bootstrap.Modal(modalEl);
+                        const modal = new bootstrap.Modal(modalEl, {backdrop: false});
                         modal.show();
                     }                
                 }); 
@@ -654,6 +657,10 @@ var KTApp = function () {
             createTinySliders();
 
             initialized = true;
+        },
+
+        initTinySlider: function(el) {
+            initTinySlider(el);
         },
 
         showPageLoading: function () {
